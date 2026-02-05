@@ -73,6 +73,7 @@ const Icon = ({ name, size = 20, color = "currentColor" }) => {
     fileText: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></>,
     headphones: <><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></>,
     grid: <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>,
+    lock: <><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></>,
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -366,6 +367,14 @@ const Nav = () => {
           <Button href="#contact" size="lg" onClick={() => setMobileOpen(false)}>
             Get Started
           </Button>
+          <a href="/admin" style={{
+            fontSize: "14px", color: T.accent,
+            textDecoration: "none", display: "flex",
+            alignItems: "center", gap: "6px", marginTop: T.s2,
+          }}>
+            <Icon name="lock" size={14} color={T.accent} />
+            Admin Portal
+          </a>
         </div>
       )}
 
@@ -1430,6 +1439,18 @@ const Footer = () => (
               {link.label}
             </a>
           ))}
+          <a href="/admin" style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            fontSize: "13px", color: T.accent,
+            marginTop: T.s2, textDecoration: "none",
+            padding: "8px 14px", borderRadius: T.r2,
+            background: "rgba(46,125,111,0.1)",
+            fontWeight: 500, letterSpacing: "0.01em",
+            transition: `all 0.2s ${T.ease}`,
+          }}>
+            <Icon name="lock" size={13} color={T.accent} />
+            Admin Portal
+          </a>
         </div>
 
         {/* Contact info */}
