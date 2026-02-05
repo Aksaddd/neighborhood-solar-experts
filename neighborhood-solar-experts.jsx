@@ -317,6 +317,19 @@ const Nav = () => {
               </a>
             ))}
             <Button href="#contact" size="md">Get Started</Button>
+            <a href="/admin" style={{
+              display: "inline-flex", alignItems: "center", gap: "5px",
+              fontSize: "13px", fontWeight: 500, color: T.accent,
+              textDecoration: "none", padding: "8px 14px",
+              borderRadius: T.r2, border: `1.5px solid ${T.border}`,
+              transition: `all 0.2s ${T.ease}`,
+            }}
+              onMouseEnter={e => { e.target.style.background = T.accentSoft; e.target.style.borderColor = T.accent; }}
+              onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.borderColor = T.border; }}
+            >
+              <Icon name="lock" size={13} color={T.accent} />
+              Admin
+            </a>
           </div>
 
           {/* Mobile hamburger */}
