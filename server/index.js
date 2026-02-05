@@ -28,11 +28,23 @@ async function start() {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  // ── Serve frontend (production) ───────────────────────────
+  const distPath = path.join(__dirname, "..", "dist");
+  const fs = require("fs");
+  if (fs.existsSync(distPath)) {
+    console.log("Serving frontend from:", distPath);
+    app.use(express.static(distPath));
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+  } else {
+    console.log("WARNING: dist/ not found at", distPath, "— frontend will not be served");
+  }
+
   // ── Start ─────────────────────────────────────────────────
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(`Admin dashboard: http://localhost:${PORT}/admin`);
-    console.log(`API base: http://localhost:${PORT}/api`);
   });
 }
 

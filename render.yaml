@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: neighborhood-solar-experts
+    runtime: node
+    buildCommand: npm install && npm run build && npm run seed-admin
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
