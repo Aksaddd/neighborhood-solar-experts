@@ -206,15 +206,16 @@ const Badge = ({ icon, children }) => (
 );
 
 // ── Section Label ──────────────────────────────────────────
-const SectionLabel = ({ children }) => (
+const SectionLabel = ({ children, light }) => (
   <div style={{
     display: "inline-flex", alignItems: "center", gap: T.s1,
     marginBottom: T.s3,
   }}>
-    <div style={{ width: "24px", height: "1.5px", background: T.accent }} />
+    <div style={{ width: "24px", height: "1.5px", background: light ? "rgba(255,255,255,0.5)" : T.accent }} />
     <span style={{
       fontFamily: T.fontBody, fontSize: "12px", fontWeight: 600,
-      letterSpacing: "0.12em", textTransform: "uppercase", color: T.accent,
+      letterSpacing: "0.12em", textTransform: "uppercase",
+      color: light ? "rgba(255,255,255,0.7)" : T.accent,
     }}>
       {children}
     </span>
@@ -392,44 +393,63 @@ const Nav = () => {
 // ════════════════════════════════════════════════════════════
 // SECTION: HERO (Home)
 // ════════════════════════════════════════════════════════════
+/*
+ * ── Hero Background Video ────────────────────────────────
+ * Replace the URL below with your own video file or hosted link.
+ * Supports: .mp4, .webm, or a YouTube/Vimeo embed won't work here
+ * — use a direct video file URL.
+ *
+ * Tips:
+ *   • Keep the file under 15 MB for fast loading
+ *   • 1080p is plenty — no need for 4K
+ *   • Compress with HandBrake or similar before uploading
+ *   • Place the file in /public or use a CDN link
+ */
+const HERO_VIDEO_URL = "/hero-video.mp4";
+
 const Hero = () => (
   <section id="home" style={{
     ...sectionPad, paddingTop: "160px", paddingBottom: T.s8,
-    background: T.bg, position: "relative", overflow: "hidden",
+    background: T.bgDark, position: "relative", overflow: "hidden",
+    minHeight: "100vh", display: "flex", alignItems: "center",
   }}>
-    {/* Subtle gradient orb — depth without distraction */}
+    {/* ── Background Video ─────────────────────────────── */}
+    <video
+      autoPlay muted loop playsInline
+      style={{
+        position: "absolute", top: 0, left: 0,
+        width: "100%", height: "100%",
+        objectFit: "cover", zIndex: 0,
+      }}
+    >
+      <source src={HERO_VIDEO_URL} type="video/mp4" />
+    </video>
+
+    {/* ── Dark Overlay — keeps text readable ────────────── */}
     <div style={{
-      position: "absolute", top: "-200px", right: "-100px",
-      width: "600px", height: "600px", borderRadius: "50%",
-      background: `radial-gradient(circle, ${T.accentSoft} 0%, transparent 70%)`,
-      opacity: 0.6, pointerEvents: "none",
-    }} />
-    <div style={{
-      position: "absolute", bottom: "-100px", left: "-150px",
-      width: "400px", height: "400px", borderRadius: "50%",
-      background: `radial-gradient(circle, ${T.warmSoft} 0%, transparent 70%)`,
-      opacity: 0.5, pointerEvents: "none",
+      position: "absolute", inset: 0, zIndex: 1,
+      background: "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.65) 100%)",
     }} />
 
-    <div style={{ ...container, position: "relative", zIndex: 1 }}>
+    <div style={{ ...container, position: "relative", zIndex: 2 }}>
       <FadeIn>
-        <SectionLabel>NYC Solar, Simplified</SectionLabel>
+        <SectionLabel light>NYC Solar, Simplified</SectionLabel>
       </FadeIn>
 
       <FadeIn delay={0.1}>
         <h1 style={{
           fontFamily: T.fontDisplay, fontSize: "clamp(36px, 5vw, 64px)",
-          fontWeight: 400, lineHeight: 1.12, color: T.text,
+          fontWeight: 400, lineHeight: 1.12, color: T.white,
           maxWidth: "720px", marginBottom: T.s3,
         }}>
           Expert guidance from consultation{" "}
-          <span style={{ fontStyle: "italic", color: T.accent }}>to power-on.</span>
+          <span style={{ fontStyle: "italic", color: T.warm }}>to power-on.</span>
         </h1>
       </FadeIn>
 
       <FadeIn delay={0.2}>
         <p style={{
-          fontSize: "18px", lineHeight: 1.7, color: T.textMuted,
+          fontSize: "18px", lineHeight: 1.7, color: "rgba(255,255,255,0.8)",
           maxWidth: "560px", marginBottom: T.s5,
         }}>
           I coordinate every step of your solar project with New York's most experienced
@@ -443,7 +463,9 @@ const Hero = () => (
             Schedule a Free Consultation
             <Icon name="arrowRight" size={16} color={T.white} />
           </Button>
-          <Button href="#process" variant="secondary" size="lg">
+          <Button href="#process" variant="secondary" size="lg" style={{
+            color: T.white, borderColor: "rgba(255,255,255,0.3)",
+          }}>
             See How It Works
           </Button>
         </div>
@@ -452,12 +474,13 @@ const Hero = () => (
       {/* Trust strip with attribution */}
       <FadeIn delay={0.4}>
         <div style={{
-          background: T.white, borderRadius: T.r3, padding: `${T.s3} ${T.s4}`,
-          boxShadow: T.shadow1, border: `1px solid ${T.border}`,
+          background: "rgba(255,255,255,0.1)", backdropFilter: "blur(16px)",
+          borderRadius: T.r3, padding: `${T.s3} ${T.s4}`,
+          border: "1px solid rgba(255,255,255,0.12)",
         }}>
-          <TrustStrip />
+          <TrustStrip dark />
           <p style={{
-            textAlign: "center", fontSize: "11px", color: T.textLight,
+            textAlign: "center", fontSize: "11px", color: "rgba(255,255,255,0.5)",
             marginTop: T.s1, letterSpacing: "0.02em",
           }}>
             Installation &amp; permitting by Centurion Solar Energy, LLC — our execution partner
