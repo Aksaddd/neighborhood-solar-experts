@@ -28,11 +28,17 @@ async function start() {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  // ── Serve frontend (production) ───────────────────────────
+  const distPath = path.join(__dirname, "..", "dist");
+  app.use(express.static(distPath));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+
   // ── Start ─────────────────────────────────────────────────
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(`Admin dashboard: http://localhost:${PORT}/admin`);
-    console.log(`API base: http://localhost:${PORT}/api`);
   });
 }
 
