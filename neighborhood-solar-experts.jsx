@@ -1024,20 +1024,31 @@ const Contact = () => {
   const [formData, setFormData] = useState({ name: "", zip: "", phone: "", email: "", bill: "" });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    /* ═══════════════════════════════════════════════════════
-       FORM HANDLER — Connect to your backend
-       
-       Options:
-       1. Supabase insert (recommended)
-       2. Webhook to Airtable / HubSpot
-       3. Email via Resend API
-       
-       Replace this with your actual submission logic.
-       ═══════════════════════════════════════════════════════ */
-    console.log("Form submission:", formData);
-    setSubmitted(true);
+    setSubmitError("");
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Submission failed");
+      }
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err.message === "Failed to fetch"
+        ? "Unable to reach server. Please try again later."
+        : err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputStyle = {
@@ -1213,25 +1224,40 @@ const Contact = () => {
                     </div>
                   </div>
 
-                  <button type="submit" style={{
+                  {submitError && (
+                    <div style={{
+                      background: "rgba(214,48,49,0.08)", color: "#D63031",
+                      padding: "10px 14px", borderRadius: T.r2,
+                      fontSize: "13px", marginTop: T.s2,
+                    }}>
+                      {submitError}
+                    </div>
+                  )}
+
+                  <button type="submit" disabled={submitting} style={{
                     width: "100%", marginTop: T.s3, padding: "16px",
                     fontFamily: T.fontBody, fontSize: "15px", fontWeight: 600,
-                    color: T.white, background: T.accent,
-                    border: "none", borderRadius: T.r2, cursor: "pointer",
+                    color: T.white, background: submitting ? T.textLight : T.accent,
+                    border: "none", borderRadius: T.r2,
+                    cursor: submitting ? "not-allowed" : "pointer",
                     transition: `all 0.3s ${T.ease}`,
                     letterSpacing: "0.01em",
                   }}
                     onMouseEnter={e => {
-                      e.target.style.background = T.accentHov;
-                      e.target.style.transform = "translateY(-1px)";
-                      e.target.style.boxShadow = T.shadow2;
+                      if (!submitting) {
+                        e.target.style.background = T.accentHov;
+                        e.target.style.transform = "translateY(-1px)";
+                        e.target.style.boxShadow = T.shadow2;
+                      }
                     }}
                     onMouseLeave={e => {
-                      e.target.style.background = T.accent;
-                      e.target.style.transform = "translateY(0)";
-                      e.target.style.boxShadow = "none";
+                      if (!submitting) {
+                        e.target.style.background = T.accent;
+                        e.target.style.transform = "translateY(0)";
+                        e.target.style.boxShadow = "none";
+                      }
                     }}>
-                    Schedule My Consultation
+                    {submitting ? "Submitting..." : "Schedule My Consultation"}
                   </button>
 
                   <p style={{

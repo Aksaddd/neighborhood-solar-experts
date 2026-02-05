@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NSE Admin — Neighborhood Solar Experts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FAFAF7;
+      --bg-alt: #F4F3EF;
+      --white: #FFFFFF;
+      --accent: #2E7D6F;
+      --accent-hover: #245F55;
+      --accent-soft: rgba(46,125,111,0.08);
+      --text: #2D3436;
+      --text-muted: #636E72;
+      --text-light: #B2BEC3;
+      --border: #E8E6E1;
+      --red: #D63031;
+      --red-soft: rgba(214,48,49,0.08);
+      --green: #00B894;
+      --green-soft: rgba(0,184,148,0.08);
+      --yellow: #FDCB6E;
+      --yellow-soft: rgba(253,203,110,0.15);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.06);
+      --font-display: 'Instrument Serif', Georgia, serif;
+      --font-body: 'DM Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Login Screen ─────────────────────────────────── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .login-card h1 {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+
+    .login-card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.2s;
+      background: var(--white);
+      color: var(--text);
+    }
+
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--accent);
+    }
+
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 20px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--white);
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-secondary {
+      background: var(--bg-alt);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--border); }
+
+    .btn-danger {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+    .btn-danger:hover { background: var(--red); color: var(--white); }
+
+    .btn-sm { padding: 8px 14px; font-size: 13px; }
+
+    .btn-full { width: 100%; justify-content: center; }
+
+    .error-msg {
+      background: var(--red-soft);
+      color: var(--red);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Dashboard Layout ─────────────────────────────── */
+    #dashboard { display: none; }
+
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar h1 {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 22px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-user {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .main-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    /* ── Stats Row ────────────────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .stat-card .label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-card .value {
+      font-family: var(--font-display);
+      font-size: 32px;
+    }
+
+    /* ── Table ────────────────────────────────────────── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-header h2 {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 24px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .search-bar input, .search-bar select {
+      padding: 8px 14px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-bar input:focus, .search-bar select:focus {
+      border-color: var(--accent);
+    }
+
+    .table-wrap {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      background: var(--bg-alt);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 14px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: var(--accent-soft); }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-new { background: var(--green-soft); color: var(--green); }
+    .status-contacted { background: var(--yellow-soft); color: #E17055; }
+    .status-qualified { background: var(--accent-soft); color: var(--accent); }
+    .status-closed { background: var(--bg-alt); color: var(--text-muted); }
+
+    .clickable-row { cursor: pointer; }
+
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .empty-state p { font-size: 14px; }
+
+    /* ── Client Detail Modal ──────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--white);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 22px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+    }
+
+    .modal-body { padding: 24px; }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .detail-item .label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .detail-item .value { font-size: 15px; }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    .estimate-card {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .estimate-card h4 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Tabs ─────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 10px 18px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Responsive ───────────────────────────────────── */
+    @media (max-width: 768px) {
+      .topbar { padding: 12px 16px; }
+      .main-content { padding: 16px; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .section-header { flex-direction: column; align-items: stretch; }
+      td, th { padding: 10px 12px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- LOGIN SCREEN                                            -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>Admin Login</h1>
+    <p>Neighborhood Solar Experts — Client Management</p>
+    <div id="login-error" class="error-msg" style="display:none;"></div>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" autocomplete="username" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:8px;">
+        Sign In
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- DASHBOARD                                               -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div id="dashboard">
+  <div class="topbar">
+    <h1>NSE Admin</h1>
+    <div class="topbar-right">
+      <span class="topbar-user" id="admin-username"></span>
+      <button class="btn btn-secondary btn-sm" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="clients" onclick="switchTab('clients')">Clients</button>
+      <button class="tab" data-tab="settings" onclick="switchTab('settings')">Settings</button>
+    </div>
+
+    <!-- CLIENTS TAB -->
+    <div id="tab-clients" class="tab-content active">
+      <div class="stats-row" id="stats-row"></div>
+
+      <div class="section-header">
+        <h2>All Clients</h2>
+        <div class="search-bar">
+          <input type="text" id="search-input" placeholder="Search clients..." />
+          <select id="status-filter">
+            <option value="">All Statuses</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="qualified">Qualified</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>ZIP</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="clients-table"></tbody>
+        </table>
+        <div id="empty-state" class="empty-state" style="display:none;">
+          <p>No clients found.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="tab-settings" class="tab-content">
+      <div style="max-width:480px;">
+        <h2 style="font-family:var(--font-display);font-weight:400;font-size:24px;margin-bottom:20px;">
+          Change Password
+        </h2>
+        <div id="pw-success" class="error-msg" style="display:none;background:var(--green-soft);color:var(--green);"></div>
+        <div id="pw-error" class="error-msg" style="display:none;"></div>
+        <form id="password-form">
+          <div class="form-group">
+            <label for="current-pw">Current Password</label>
+            <input type="password" id="current-pw" required />
+          </div>
+          <div class="form-group">
+            <label for="new-pw">New Password</label>
+            <input type="password" id="new-pw" required minlength="8" />
+          </div>
+          <div class="form-group">
+            <label for="confirm-pw">Confirm New Password</label>
+            <input type="password" id="confirm-pw" required minlength="8" />
+          </div>
+          <button type="submit" class="btn btn-primary">Update Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- CLIENT DETAIL MODAL                                     -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="client-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-client-name"></h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT                                              -->
+<!-- ════════════════════════════════════════════════════════ -->
+<script>
+const API = window.location.origin + "/api";
+let token = localStorage.getItem("nse_token");
+let currentClients = [];
+
+// ── Auth ──────────────────────────────────────────────────
+
+function headers() {
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+async function api(path, options = {}) {
+  const res = await fetch(`${API}${path}`, { headers: headers(), ...options });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
+
+document.getElementById("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById("login-error");
+  errEl.style.display = "none";
+
+  try {
+    const data = await api("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+      }),
+    });
+    token = data.token;
+    localStorage.setItem("nse_token", token);
+    showDashboard(data.username);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = "block";
+  }
+});
+
+function logout() {
+  token = null;
+  localStorage.removeItem("nse_token");
+  document.getElementById("dashboard").style.display = "none";
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("username").value = "";
+  document.getElementById("password").value = "";
+}
+
+async function checkAuth() {
+  if (!token) return;
+  try {
+    const data = await api("/auth/me");
+    showDashboard(data.username);
+  } catch {
+    logout();
+  }
+}
+
+function showDashboard(username) {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+  document.getElementById("admin-username").textContent = username;
+  loadClients();
+}
+
+// ── Tabs ──────────────────────────────────────────────────
+
+function switchTab(tab) {
+  document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach((t) => t.classList.remove("active"));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
+  document.getElementById(`tab-${tab}`).classList.add("active");
+}
+
+// ── Clients ───────────────────────────────────────────────
+
+async function loadClients() {
+  const search = document.getElementById("search-input").value;
+  const status = document.getElementById("status-filter").value;
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (status) params.set("status", status);
+
+  try {
+    currentClients = await api(`/clients?${params}`);
+    renderStats();
+    renderTable();
+  } catch (err) {
+    console.error("Failed to load clients:", err);
+  }
+}
+
+function renderStats() {
+  const total = currentClients.length;
+  const newCount = currentClients.filter((c) => c.status === "new").length;
+  const contactedCount = currentClients.filter((c) => c.status === "contacted").length;
+  const qualifiedCount = currentClients.filter((c) => c.status === "qualified").length;
+
+  document.getElementById("stats-row").innerHTML = `
+    <div class="stat-card">
+      <div class="label">Total Clients</div>
+      <div class="value">${total}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">New Leads</div>
+      <div class="value" style="color:var(--green)">${newCount}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Contacted</div>
+      <div class="value" style="color:#E17055">${contactedCount}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Qualified</div>
+      <div class="value" style="color:var(--accent)">${qualifiedCount}</div>
+    </div>
+  `;
+}
+
+function renderTable() {
+  const tbody = document.getElementById("clients-table");
+  const empty = document.getElementById("empty-state");
+
+  if (currentClients.length === 0) {
+    tbody.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  tbody.innerHTML = currentClients
+    .map(
+      (c) => `
+    <tr class="clickable-row" onclick="openClient(${c.id})">
+      <td><strong>${esc(c.name)}</strong></td>
+      <td>${esc(c.email)}</td>
+      <td>${esc(c.phone)}</td>
+      <td>${esc(c.zip)}</td>
+      <td><span class="status-badge status-${c.status}">${c.status}</span></td>
+      <td>${new Date(c.created_at).toLocaleDateString()}</td>
+    </tr>`
+    )
+    .join("");
+}
+
+function esc(str) {
+  if (!str) return "";
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// Search & filter with debounce
+let searchTimeout;
+document.getElementById("search-input").addEventListener("input", () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(loadClients, 300);
+});
+document.getElementById("status-filter").addEventListener("change", loadClients);
+
+// ── Client Detail Modal ───────────────────────────────────
+
+async function openClient(id) {
+  try {
+    const client = await api(`/clients/${id}`);
+    document.getElementById("modal-client-name").textContent = client.name;
+
+    let html = `
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="label">Email</div>
+          <div class="value">${esc(client.email)}</div>
+        </div>
+        <div class="detail-item">
+          <div class="label">Phone</div>
+          <div class="value">${esc(client.phone)}</div>
+        </div>
+        <div class="detail-item">
+          <div class="label">ZIP Code</div>
+          <div class="value">${esc(client.zip)}</div>
+        </div>
+        <div class="detail-item">
+          <div class="label">Monthly Bill</div>
+          <div class="value">${esc(client.bill) || "—"}</div>
+        </div>
+        <div class="detail-item">
+          <div class="label">Status</div>
+          <div class="value"><span class="status-badge status-${client.status}">${client.status}</span></div>
+        </div>
+        <div class="detail-item">
+          <div class="label">Submitted</div>
+          <div class="value">${new Date(client.created_at).toLocaleString()}</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+        <select id="edit-status" style="width:auto;padding:8px 14px;font-size:13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);">
+          ${["new", "contacted", "qualified", "closed"]
+            .map((s) => `<option value="${s}" ${s === client.status ? "selected" : ""}>${s}</option>`)
+            .join("")}
+        </select>
+        <button class="btn btn-primary btn-sm" style="margin-left:8px;" onclick="updateStatus(${client.id})">Update</button>
+      </div>
+
+      <div class="form-group" style="margin-top:12px;">
+        <label>Admin Notes</label>
+        <textarea id="edit-notes" rows="3" style="width:100%;padding:12px 14px;font-family:var(--font-body);font-size:14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);outline:none;resize:vertical;">${esc(client.notes) || ""}</textarea>
+        <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="updateNotes(${client.id})">Save Notes</button>
+      </div>
+
+      <hr class="section-divider" />
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h3 style="font-family:var(--font-display);font-weight:400;font-size:18px;">Estimates</h3>
+        <button class="btn btn-primary btn-sm" onclick="showEstimateForm(${client.id})">+ Add Estimate</button>
+      </div>
+
+      <div id="estimate-form-wrap" style="display:none;margin-bottom:16px;">
+        <div class="estimate-card">
+          <h4>New Estimate</h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group"><label>System Size</label><input id="est-size" placeholder="e.g. 8.5 kW" /></div>
+            <div class="form-group"><label>Panel Count</label><input id="est-panels" placeholder="e.g. 20" /></div>
+            <div class="form-group"><label>Annual Production</label><input id="est-prod" placeholder="e.g. 10,200 kWh" /></div>
+            <div class="form-group"><label>Estimated Savings</label><input id="est-savings" placeholder="e.g. $1,800/yr" /></div>
+          </div>
+          <div class="form-group"><label>Incentives</label><input id="est-incentives" placeholder="e.g. 30% ITC, NYSERDA" style="width:100%;" /></div>
+          <div class="form-group"><label>Notes</label><textarea id="est-notes" rows="2" style="width:100%;padding:10px;font-family:var(--font-body);font-size:13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);resize:vertical;"></textarea></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="saveEstimate(${client.id})">Save Estimate</button>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('estimate-form-wrap').style.display='none'">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="estimates-list">
+        ${
+          client.estimates && client.estimates.length > 0
+            ? client.estimates
+                .map(
+                  (est) => `
+          <div class="estimate-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h4>Estimate #${est.id} — ${new Date(est.created_at).toLocaleDateString()}</h4>
+              <button class="btn btn-danger btn-sm" onclick="deleteEstimate(${est.id}, ${client.id})">Delete</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+              <div><strong>System:</strong> ${esc(est.system_size) || "—"}</div>
+              <div><strong>Panels:</strong> ${esc(est.panel_count) || "—"}</div>
+              <div><strong>Production:</strong> ${esc(est.annual_production) || "—"}</div>
+              <div><strong>Savings:</strong> ${esc(est.estimated_savings) || "—"}</div>
+            </div>
+            ${est.incentives ? `<div style="font-size:13px;margin-top:4px;"><strong>Incentives:</strong> ${esc(est.incentives)}</div>` : ""}
+            ${est.notes ? `<div style="font-size:13px;margin-top:4px;"><strong>Notes:</strong> ${esc(est.notes)}</div>` : ""}
+          </div>`
+                )
+                .join("")
+            : '<p style="color:var(--text-muted);font-size:14px;">No estimates yet.</p>'
+        }
+      </div>
+
+      <hr class="section-divider" />
+
+      <div class="modal-actions">
+        <button class="btn btn-danger btn-sm" onclick="deleteClient(${client.id})">Delete Client</button>
+      </div>
+    `;
+
+    document.getElementById("modal-body").innerHTML = html;
+    document.getElementById("client-modal").classList.add("active");
+  } catch (err) {
+    console.error("Failed to load client:", err);
+  }
+}
+
+function closeModal() {
+  document.getElementById("client-modal").classList.remove("active");
+}
+
+document.getElementById("client-modal").addEventListener("click", (e) => {
+  if (e.target.id === "client-modal") closeModal();
+});
+
+async function updateStatus(id) {
+  const status = document.getElementById("edit-status").value;
+  try {
+    await api(`/clients/${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
+    loadClients();
+    openClient(id);
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
+
+async function updateNotes(id) {
+  const notes = document.getElementById("edit-notes").value;
+  try {
+    await api(`/clients/${id}`, { method: "PATCH", body: JSON.stringify({ notes }) });
+    alert("Notes saved.");
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
+
+async function deleteClient(id) {
+  if (!confirm("Permanently delete this client and all their estimates?")) return;
+  try {
+    await api(`/clients/${id}`, { method: "DELETE" });
+    closeModal();
+    loadClients();
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
+
+// ── Estimates ─────────────────────────────────────────────
+
+function showEstimateForm() {
+  document.getElementById("estimate-form-wrap").style.display = "block";
+}
+
+async function saveEstimate(clientId) {
+  const body = {
+    client_id: clientId,
+    system_size: document.getElementById("est-size").value,
+    panel_count: document.getElementById("est-panels").value,
+    annual_production: document.getElementById("est-prod").value,
+    estimated_savings: document.getElementById("est-savings").value,
+    incentives: document.getElementById("est-incentives").value,
+    notes: document.getElementById("est-notes").value,
+  };
+
+  try {
+    await api("/estimates", { method: "POST", body: JSON.stringify(body) });
+    openClient(clientId);
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
+
+async function deleteEstimate(estId, clientId) {
+  if (!confirm("Delete this estimate?")) return;
+  try {
+    await api(`/estimates/${estId}`, { method: "DELETE" });
+    openClient(clientId);
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
+
+// ── Change Password ───────────────────────────────────────
+
+document.getElementById("password-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const successEl = document.getElementById("pw-success");
+  const errEl = document.getElementById("pw-error");
+  successEl.style.display = "none";
+  errEl.style.display = "none";
+
+  const newPw = document.getElementById("new-pw").value;
+  const confirmPw = document.getElementById("confirm-pw").value;
+
+  if (newPw !== confirmPw) {
+    errEl.textContent = "Passwords do not match";
+    errEl.style.display = "block";
+    return;
+  }
+
+  try {
+    await api("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({
+        currentPassword: document.getElementById("current-pw").value,
+        newPassword: newPw,
+      }),
+    });
+    successEl.textContent = "Password updated successfully.";
+    successEl.style.display = "block";
+    document.getElementById("password-form").reset();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = "block";
+  }
+});
+
+// ── Init ──────────────────────────────────────────────────
+checkAuth();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "neighborhood-solar-experts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Neighborhood Solar Experts — Associate Solar Website with Backend",
+  "scripts": {
+    "server": "node server/index.js",
+    "seed-admin": "node server/seed-admin.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
