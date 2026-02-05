@@ -29,7 +29,7 @@ const T = {
   white:     "#FFFFFF",
   error:     "#C0392B",
   // Typography
-  fontDisplay: "'Instrument Serif', Georgia, serif",
+  fontDisplay: "'Playfair Display', Georgia, serif",
   fontBody:    "'DM Sans', 'Helvetica Neue', sans-serif",
   // Spacing scale (8px base)
   s1: "8px", s2: "16px", s3: "24px", s4: "32px", s5: "40px",
@@ -114,7 +114,7 @@ const FadeIn = ({ children, delay = 0, style = {} }) => {
 // ── Global Styles (injected once) ──────────────────────────
 const GlobalStyles = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
     
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -288,7 +288,7 @@ const Nav = () => {
         <div style={{ ...container, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           {/* Logo */}
           <a href="#home" style={{
-            fontFamily: T.fontDisplay, fontSize: "19px", color: T.text,
+            fontFamily: T.fontDisplay, fontSize: "20px", fontWeight: 600, color: T.text,
             textDecoration: "none", display: "flex", alignItems: "center", gap: T.s1,
           }}>
             <div style={{
@@ -1431,7 +1431,7 @@ const Footer = () => (
         {/* Brand */}
         <div>
           <div style={{
-            fontFamily: T.fontDisplay, fontSize: "20px", marginBottom: T.s2,
+            fontFamily: T.fontDisplay, fontSize: "20px", fontWeight: 600, marginBottom: T.s2,
             display: "flex", alignItems: "center", gap: T.s1,
           }}>
             <div style={{
