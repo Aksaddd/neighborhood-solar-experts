@@ -30,10 +30,16 @@ async function start() {
 
   // ── Serve frontend (production) ───────────────────────────
   const distPath = path.join(__dirname, "..", "dist");
-  app.use(express.static(distPath));
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
-  });
+  const fs = require("fs");
+  if (fs.existsSync(distPath)) {
+    console.log("Serving frontend from:", distPath);
+    app.use(express.static(distPath));
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+  } else {
+    console.log("WARNING: dist/ not found at", distPath, "— frontend will not be served");
+  }
 
   // ── Start ─────────────────────────────────────────────────
   app.listen(PORT, () => {
