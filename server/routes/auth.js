@@ -12,8 +12,13 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ error: "Username and password are required" });
   }
 
-  const admin = db.get("SELECT * FROM admins WHERE username = ?", [username]);
-  if (!admin) {
+  const { data: admin, error } = await db
+    .from("admins")
+    .select("*")
+    .eq("username", username)
+    .single();
+
+  if (error || !admin) {
     return res.status(401).json({ error: "Invalid credentials" });
   }
 
@@ -37,14 +42,23 @@ router.post("/change-password", requireAuth, async (req, res) => {
     return res.status(400).json({ error: "New password must be at least 8 characters" });
   }
 
-  const admin = db.get("SELECT * FROM admins WHERE id = ?", [req.admin.id]);
+  const { data: admin } = await db
+    .from("admins")
+    .select("*")
+    .eq("id", req.admin.id)
+    .single();
+
   const valid = await bcrypt.compare(currentPassword, admin.password);
   if (!valid) {
     return res.status(401).json({ error: "Current password is incorrect" });
   }
 
   const hash = await bcrypt.hash(newPassword, 12);
-  db.run("UPDATE admins SET password = ? WHERE id = ?", [hash, req.admin.id]);
+  await db
+    .from("admins")
+    .update({ password: hash })
+    .eq("id", req.admin.id);
+
   res.json({ message: "Password updated" });
 });
 

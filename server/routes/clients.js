@@ -6,7 +6,7 @@ const router = Router();
 // ── Public: submit a new lead from the contact form ──────
 
 /** POST /api/clients  (public — called by the website form) */
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const db = req.app.locals.db;
   const { name, email, phone, zip, bill } = req.body;
 
@@ -14,88 +14,108 @@ router.post("/", (req, res) => {
     return res.status(400).json({ error: "Name, email, phone, and ZIP are required" });
   }
 
-  const result = db.run(
-    "INSERT INTO clients (name, email, phone, zip, bill) VALUES (?, ?, ?, ?, ?)",
-    [name, email, phone, zip, bill || null]
-  );
+  const { data, error } = await db
+    .from("clients")
+    .insert({ name, email, phone, zip, bill: bill || null })
+    .select("id")
+    .single();
 
-  res.status(201).json({ id: result.lastInsertRowid, message: "Submission received" });
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.status(201).json({ id: data.id, message: "Submission received" });
 });
 
 // ── Admin-only routes below ──────────────────────────────
 
 /** GET /api/clients  (admin) — list all clients */
-router.get("/", requireAuth, (req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   const db = req.app.locals.db;
   const { status, search, sort, order } = req.query;
 
-  let sql = "SELECT * FROM clients WHERE 1=1";
-  const params = [];
+  let query = db.from("clients").select("*");
 
   if (status) {
-    sql += " AND status = ?";
-    params.push(status);
+    query = query.eq("status", status);
   }
 
   if (search) {
-    sql += " AND (name LIKE ? OR email LIKE ? OR phone LIKE ? OR zip LIKE ?)";
-    const term = `%${search}%`;
-    params.push(term, term, term, term);
+    query = query.or(
+      `name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,zip.ilike.%${search}%`
+    );
   }
 
   const sortCol = ["name", "email", "created_at", "status", "zip"].includes(sort) ? sort : "created_at";
-  const sortOrder = order === "asc" ? "ASC" : "DESC";
-  sql += ` ORDER BY ${sortCol} ${sortOrder}`;
+  const ascending = order === "asc";
+  query = query.order(sortCol, { ascending });
 
-  const clients = db.all(sql, params);
-  res.json(clients);
+  const { data, error } = await query;
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 /** GET /api/clients/:id  (admin) — single client with estimates */
-router.get("/:id", requireAuth, (req, res) => {
+router.get("/:id", requireAuth, async (req, res) => {
   const db = req.app.locals.db;
-  const client = db.get("SELECT * FROM clients WHERE id = ?", [req.params.id]);
-  if (!client) return res.status(404).json({ error: "Client not found" });
 
-  const estimates = db.all("SELECT * FROM estimates WHERE client_id = ? ORDER BY created_at DESC", [req.params.id]);
-  res.json({ ...client, estimates });
+  const { data: client, error } = await db
+    .from("clients")
+    .select("*")
+    .eq("id", req.params.id)
+    .single();
+
+  if (error || !client) return res.status(404).json({ error: "Client not found" });
+
+  const { data: estimates } = await db
+    .from("estimates")
+    .select("*")
+    .eq("client_id", req.params.id)
+    .order("created_at", { ascending: false });
+
+  res.json({ ...client, estimates: estimates || [] });
 });
 
 /** PATCH /api/clients/:id  (admin) — update client fields */
-router.patch("/:id", requireAuth, (req, res) => {
+router.patch("/:id", requireAuth, async (req, res) => {
   const db = req.app.locals.db;
-  const client = db.get("SELECT * FROM clients WHERE id = ?", [req.params.id]);
-  if (!client) return res.status(404).json({ error: "Client not found" });
 
   const allowed = ["name", "email", "phone", "zip", "bill", "status", "notes"];
-  const updates = [];
-  const params = [];
+  const updates = {};
 
   for (const field of allowed) {
     if (req.body[field] !== undefined) {
-      updates.push(`${field} = ?`);
-      params.push(req.body[field]);
+      updates[field] = req.body[field];
     }
   }
 
-  if (updates.length === 0) {
+  if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "No valid fields to update" });
   }
 
-  updates.push("updated_at = datetime('now')");
-  params.push(req.params.id);
+  updates.updated_at = new Date().toISOString();
 
-  db.run(`UPDATE clients SET ${updates.join(", ")} WHERE id = ?`, params);
+  const { data, error } = await db
+    .from("clients")
+    .update(updates)
+    .eq("id", req.params.id)
+    .select("*")
+    .single();
 
-  const updated = db.get("SELECT * FROM clients WHERE id = ?", [req.params.id]);
-  res.json(updated);
+  if (error || !data) return res.status(404).json({ error: "Client not found" });
+  res.json(data);
 });
 
 /** DELETE /api/clients/:id  (admin) */
-router.delete("/:id", requireAuth, (req, res) => {
+router.delete("/:id", requireAuth, async (req, res) => {
   const db = req.app.locals.db;
-  const result = db.run("DELETE FROM clients WHERE id = ?", [req.params.id]);
-  if (result.changes === 0) return res.status(404).json({ error: "Client not found" });
+
+  const { data, error } = await db
+    .from("clients")
+    .delete()
+    .eq("id", req.params.id)
+    .select("id");
+
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data || data.length === 0) return res.status(404).json({ error: "Client not found" });
   res.json({ message: "Client deleted" });
 });
 
